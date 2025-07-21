@@ -1,3 +1,6 @@
+# Author: nkarthik@uptycs.com
+# Updated: July 21 2025
+
 param(
     [Parameter(Mandatory = $true)]
     [string]$MsiPath,
