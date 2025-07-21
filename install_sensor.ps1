@@ -81,7 +81,6 @@ if (-not [string]::IsNullOrEmpty($InstallProperties)) {
 
 Write-Host $msiCommand
 
-
 # Execute the installation
 try {
     $process = Start-Process -FilePath "msiexec.exe" -ArgumentList $msiCommand -Wait -PassThru
