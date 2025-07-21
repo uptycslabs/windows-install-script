@@ -33,10 +33,6 @@ if (-not (Test-Path $MsiPath)) {
     Write-Error "MSI file not found: $MsiPath"
     exit 1
 }
-# Check if MSI file exists
-#if (Test-Path $MsiPath) {
-#    Write-Error "MSI file found: $MsiPath"
-#}
 
 if (-not $Silent.IsPresent) {
     $Silent = $true
@@ -119,8 +115,10 @@ try {
         }
     }
 
+    # Commented this out as we already show the log path above
     #Write-Host "Log file location: $LogPath" -ForegroundColor Cyan
 
+    # Commented this out to support automated silent installation - no user response required
     #if ($LASTEXITCODE -ne 0 -and $LASTEXITCODE -ne 3010) {
     #    $openLog = Read-Host "`nWould you like to open the log file? (y/n)"
     #    if ($openLog -eq 'y') {
