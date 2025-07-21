@@ -20,7 +20,6 @@ Set-MpPreference -EnableNetworkProtection Disabled
 
 # --- MSI Installation Script ---
 
-
 # Function to check if running as administrator
 function Test-Administrator {
     $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
