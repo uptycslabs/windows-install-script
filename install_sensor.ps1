@@ -1,5 +1,5 @@
 # Author: nkarthik@uptycs.com
-# Updated: July 21 2025
+# Updated: July 22 2025
 
 param(
     [Parameter(Mandatory = $true)]
@@ -9,7 +9,10 @@ param(
     [switch]$Silent,
 
     [Parameter(Mandatory = $false)]
-    [string]$InstallProperties = ""
+    [string]$InstallProperties = "",
+
+    [Parameter(Mandatory = $false)]
+    [string]$LogPath
 )
 
 # Disable SmartScreen temporarily 
@@ -109,7 +112,7 @@ try {
             Write-Warning "Installation completed but requires restart (exit code 3010)"
         }
         default {
-            Write-Error "Installation failed with exit code: $LASTEXITCODE"
+            Write-Error "Installation failed with exit code: $exitCode"
         }
     }
 
@@ -124,7 +127,7 @@ try {
     #    }
     #}
 
-    return $LASTEXITCODE
+    return $exitCode
 }
 catch {
     Write-Error "An unexpected error occurred: $($_.Exception.Message)"
