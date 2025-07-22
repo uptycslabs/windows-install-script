@@ -124,7 +124,7 @@ try {
     #    }
     #}
 
-    return $LASTEXITCODE
+    return $exitCode
 }
 catch {
     Write-Error "An unexpected error occurred: $($_.Exception.Message)"
