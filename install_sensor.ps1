@@ -1,5 +1,5 @@
-# Author: nkarthik@uptycs.com
-# Updated: July 22 2025
+# Authors: nkarthik@uptycs.com, jwayte@uptycs.com
+# Updated: July 24 2025
 
 param(
     [Parameter(Mandatory = $true)]
@@ -15,11 +15,44 @@ param(
     [string]$LogPath
 )
 
-# Disable SmartScreen temporarily 
-Set-MpPreference -EnableNetworkProtection Disabled
+# --- CHECK AND MODIFY SAC ENFORCEMENT MODE ---
+$registryPath = "HKLM:\SYSTEM\CurrentControlSet\Control\CI\Policy"
+$registryValue = "VerifiedAndReputablePolicyState"
 
-# Disable UAC in Windows (optional) Commented
-#Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "EnableLUA" -Value 0 -Type DWord
+try {
+    $currentState = Get-ItemProperty -Path $registryPath -Name $registryValue -ErrorAction Stop
+    $state = $currentState.$registryValue
+    Write-Host "Current Smart App Control (SAC) State: $state (0=OFF, 1=ON, 2=EVALUATION)"
+
+    if ($state -eq 1) {
+        Write-Host "SAC is in Enforcement mode. Switching to Evaluation mode (2)..."
+        try
+           {
+                Set-ItemProperty -Path $registryPath -Name $registryValue -Value 2 -Type DWord -Force
+           }
+        catch
+           {
+                Write-Error "Unable to modify SAC state to Eval Mode. Details: $($_.Exception.Message)"
+           }
+
+        Start-Process -FilePath "gpupdate.exe" -ArgumentList "/force" -Wait 
+         
+        $newState = (Get-ItemProperty -Path $registryPath -Name $registryValue).$registryValue
+        if ($newState -ne 2) {
+            Write-Error "Failed to change SAC to Evaluation mode. Aborting installation"
+            exit 1
+        } else {
+           Write-Host "SAC set to Eval mode. Please restart your system and run this script again to complete Uptycs Installation"
+           exit 0
+        }
+    }
+}
+catch {
+    Write-Warning "Unable to check or modify SAC state. Details: $($_.Exception.Message)"
+}
+
+# --- Disable SmartScreen temporarily ---
+Set-MpPreference -EnableNetworkProtection Disabled
 
 # --- MSI Installation Script ---
 
@@ -90,42 +123,15 @@ try {
     $exitCode = $process.ExitCode
 
     switch ($exitCode) {
-        0 {
-            Write-Host "`nInstallation completed successfully!" -ForegroundColor Green
-        }
-        1603 {
-            Write-Error "Installation failed with error 1603 (Generic failure)"
-        }
-        1618 {
-            Write-Error "Installation failed with error 1618 (Another installation is in progress)"
-        }
-        1619 {
-            Write-Error "Installation failed with error 1619 (Package could not be opened)"
-        }
-        1620 {
-            Write-Error "Installation failed with error 1620 (Invalid package)"
-        }
-        1633 {
-            Write-Error "Installation failed with error 1633 (Unsupported platform)"
-        }
-        3010 {
-            Write-Warning "Installation completed but requires restart (exit code 3010)"
-        }
-        default {
-            Write-Error "Installation failed with exit code: $exitCode"
-        }
+        0 { Write-Host "`nInstallation completed successfully!" -ForegroundColor Green }
+        1603 { Write-Error "Installation failed with error 1603 (Generic failure)" }
+        1618 { Write-Error "Installation failed with error 1618 (Another installation is in progress)" }
+        1619 { Write-Error "Installation failed with error 1619 (Package could not be opened)" }
+        1620 { Write-Error "Installation failed with error 1620 (Invalid package)" }
+        1633 { Write-Error "Installation failed with error 1633 (Unsupported platform)" }
+        3010 { Write-Warning "Installation completed but requires restart (exit code 3010)" }
+        default { Write-Error "Installation failed with exit code: $exitCode" }
     }
-
-    # Commented this out as we already show the log path above
-    #Write-Host "Log file location: $LogPath" -ForegroundColor Cyan
-
-    # Commented this out to support automated silent installation - no user response required
-    #if ($LASTEXITCODE -ne 0 -and $LASTEXITCODE -ne 3010) {
-    #    $openLog = Read-Host "`nWould you like to open the log file? (y/n)"
-    #    if ($openLog -eq 'y') {
-    #        Start-Process notepad.exe -ArgumentList $LogPath
-    #    }
-    #}
 
     return $exitCode
 }
@@ -133,12 +139,15 @@ catch {
     Write-Error "An unexpected error occurred: $($_.Exception.Message)"
     return 1
 }
+finally {
+    # Re-enable SmartScreen
+    Set-MpPreference -EnableNetworkProtection Enabled
 
-# Re-enable SmartScreen (optional)
-Set-MpPreference -EnableNetworkProtection Enabled
+    # Re-enable UAC
+    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "EnableLUA" -Value 1 -Type DWord
 
-# Re-enable UAC in Windows
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "EnableLUA" -Value 1 -Type DWord
+    # Optional: Display UAC status
+    $uacStatus = Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "EnableLUA"
+    Write-Host "UAC status re-enabled: $($uacStatus.EnableLUA)"
 
-# Verify UAC setting
-Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "EnableLUA"
+}
