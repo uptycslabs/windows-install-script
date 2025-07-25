@@ -9,5 +9,7 @@ Example usage:
 `.\install_sensor.ps1 -MsiPath "C:\Users\abacus\quality2\assets-uptycs-protect-5.14.1.17-Uptycs-LTS-windows.msi"`
 
 If you face any unauthorize access error run below commands
+
 1)Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+
 2)powershell -ExecutionPolicy Bypass -File "C:\Path\To\install_sensor.ps1" -MsiPath "C:\Users\abacus\quality2\assets-uptycs-protect-5.14.1.17-Uptycs-LTS-windows.msi"
