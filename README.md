@@ -7,8 +7,7 @@ Download the MSI , Flags& Secrets Separately and need to pass them as variables 
 Example usage:  
 ` .\install_sensor.ps1 -MsiPath "C:\Users\abacus\uptycs-protect-5.14.1.17-Uptycs-202503281456.msi" -FSPath "C:\Users\abacus\flags&secrets"`
 
-If you face any unauthorize access error run below commands
+If you face any unauthorized access error run below commands:
 
-1)Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
-
-2)powershell -ExecutionPolicy Bypass -File "C:\Path\To\install_sensor.ps1" -MsiPath "C:\Users\abacus\quality2\assets-uptycs-protect-5.14.1.17-Uptycs-LTS-windows.msi"
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+powershell -ExecutionPolicy Bypass -File "C:\Path\To\install_sensor.ps1" -MsiPath "C:\path_to_msi\assets-uptycs-protect-5.14.1.17-Uptycs-LTS-windows.msi" -FSPath "C:\path_to_flags_and_secret"
