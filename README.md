@@ -5,7 +5,7 @@ If Smart App Control is set to 'OFF',then you can double click and directly inst
 Download the MSI , Flags& Secrets Separately and need to pass them as variables as shown below.
 
 Example usage:  
-` .\install_sensor.ps1 -MsiPath "C:\Users\abacus\uptycs-protect-5.14.1.17-Uptycs-202503281456.msi" -FSPath "C:\Users\abacus\ventana\flags&secrets"`
+` .\install_sensor.ps1 -MsiPath "C:\Users\abacus\uptycs-protect-5.14.1.17-Uptycs-202503281456.msi" -FSPath "C:\Users\abacus\flags&secrets"`
 
 If you face any unauthorize access error run below commands
 
