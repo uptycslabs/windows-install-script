@@ -1,9 +1,13 @@
 # Authors: nkarthik@uptycs.com, jwayte@uptycs.com
-# Updated: July 24 2025
+# Updated: July 28 2025
 
 param(
     [Parameter(Mandatory = $true)]
     [string]$MsiPath,
+  
+    [Parameter(Mandatory = $true)]
+    [string]$FSPath,
+
 
     [Parameter(Mandatory = $false)]
     [switch]$Silent,
@@ -15,41 +19,7 @@ param(
     [string]$LogPath
 )
 
-# --- CHECK AND MODIFY SAC ENFORCEMENT MODE ---
-$registryPath = "HKLM:\SYSTEM\CurrentControlSet\Control\CI\Policy"
-$registryValue = "VerifiedAndReputablePolicyState"
 
-try {
-    $currentState = Get-ItemProperty -Path $registryPath -Name $registryValue -ErrorAction Stop
-    $state = $currentState.$registryValue
-    Write-Host "Current Smart App Control (SAC) State: $state (0=OFF, 1=ON, 2=EVALUATION)"
-
-    if ($state -eq 1) {
-        Write-Host "SAC is in Enforcement mode. Switching to Evaluation mode (2)..."
-        try
-           {
-                Set-ItemProperty -Path $registryPath -Name $registryValue -Value 2 -Type DWord -Force
-           }
-        catch
-           {
-                Write-Error "Unable to modify SAC state to Eval Mode. Details: $($_.Exception.Message)"
-           }
-
-        Start-Process -FilePath "gpupdate.exe" -ArgumentList "/force" -Wait 
-         
-        $newState = (Get-ItemProperty -Path $registryPath -Name $registryValue).$registryValue
-        if ($newState -ne 2) {
-            Write-Error "Failed to change SAC to Evaluation mode. Aborting installation"
-            exit 1
-        } else {
-           Write-Host "SAC set to Eval mode. Please restart your system and run this script again to complete Uptycs Installation"
-           exit 0
-        }
-    }
-}
-catch {
-    Write-Warning "Unable to check or modify SAC state. Details: $($_.Exception.Message)"
-}
 
 # --- Disable SmartScreen temporarily ---
 Set-MpPreference -EnableNetworkProtection Disabled
@@ -133,13 +103,29 @@ try {
         default { Write-Error "Installation failed with exit code: $exitCode" }
     }
 
-    return $exitCode
+    #return $exitCode
 }
 catch {
     Write-Error "An unexpected error occurred: $($_.Exception.Message)"
     return 1
 }
-finally {
+
+Write-Host "Wait for 20 seconds before modyfying Flags and secrets from $FSPath"
+Start-Sleep -Seconds 20
+Write-Host "Adding Flags and Secrets from $FSPath "
+try
+    {Copy-Item -Path "$FSPath\uptycs.secret", "$FSPath\osquery.flags" -Destination "C:\Program Files\Uptycs\osquery\conf" -Force}
+catch
+    {Write-Error "Unable to modify flags and secret. Details: $($_.Exception.Message)"}
+Write-Host "Added the Flags and Secrets" -ForegroundColor Green
+Write-Host "Stopping the sensor"
+Stop-Service -Name "uptycsosquery"
+Write-Host  "Starting the sensor"
+Start-Service -Name "uptycsosquery"
+Write-Host  "Status of the sensor"
+Get-Service -Name "uptycsosquery"
+
+
     # Re-enable SmartScreen
     Set-MpPreference -EnableNetworkProtection Enabled
 
@@ -149,5 +135,3 @@ finally {
     # Optional: Display UAC status
     $uacStatus = Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "EnableLUA"
     Write-Host "UAC status re-enabled: $($uacStatus.EnableLUA)"
-
-}
