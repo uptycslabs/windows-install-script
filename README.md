@@ -1,6 +1,6 @@
 # windows-install-script
-Powershell script to install the Uptycs Windows agent (supports silent installation). 
-This script will install the Uptycs agent msi on a Windows machine that does or does not have Smart App Control. 
+This repository contains a Powershell script to install the Uptycs Windows agent (supports silent installation). 
+The script will install the Uptycs agent on a Windows machine that does or does not have Smart App Control. 
 If Smart App Control is set to 'OFF', then you can double click the .msi install package (you can use the package with flags and secret) and directly install.  
   
 If Smart App Control is 'ON' (or 'OFF') you can use this script to install. Note this requires that you download the install package and flags/secret separately (as Smart App Control does not recognize the signature of the combined package). 
