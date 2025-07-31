@@ -6,7 +6,7 @@ If Smart App Control is set to 'OFF', then you can double click the .msi install
 If Smart App Control is 'ON' (or 'OFF') you can use this script to install. Note this requires that you download the install package and flags/secret separately (as Smart App Control does not recognize the signature of the combined package). 
 This script works by installing silently then copying the flags/secret to the correct location. 
 
-Example Powershell usage:  
+Example Powershell usage (update paths as required):  
 \# Authorize access for the script to run as RemoteSigned  
 `Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned`    
 `powershell -ExecutionPolicy Bypass -File "C:\Users\Public\Documents\uptycs\install_sensor.ps1" -MsiPath "C:\Users\Public\Documents\uptycs\assets-uptycs-protect-5.14.1.17-Uptycs-LTS-windows.msi" -FSPath "C:\Users\Public\Documents\uptycs\assets-additionalFiles"`  
